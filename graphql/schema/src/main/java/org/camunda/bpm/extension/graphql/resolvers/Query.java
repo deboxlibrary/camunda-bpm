@@ -1,7 +1,6 @@
 package org.camunda.bpm.extension.graphql.resolvers;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
-import com.coxautodev.graphql.tools.GraphQLResolver;
 import org.camunda.bpm.application.ProcessApplicationContext;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -71,8 +70,8 @@ public class Query implements GraphQLQueryResolver {
 
     public List<ProcessDefinition> processDefinitions(Boolean isSuspended, Boolean latest) {
         ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery();
-        processDefinitionQuery = (isSuspended != null && isSuspended == true) ? processDefinitionQuery.suspended() : processDefinitionQuery;
-        processDefinitionQuery = (latest != null && latest == true) ? processDefinitionQuery.latestVersion() : processDefinitionQuery;
+        processDefinitionQuery = (isSuspended != null && isSuspended) ? processDefinitionQuery.suspended() : processDefinitionQuery;
+        processDefinitionQuery = (latest != null && latest) ? processDefinitionQuery.latestVersion() : processDefinitionQuery;
 
         return processDefinitionQuery.list();
     }

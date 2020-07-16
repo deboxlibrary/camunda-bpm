@@ -12,36 +12,22 @@
  */
 package org.camunda.bpm.extension.graphql.auth;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.camunda.bpm.BpmPlatform;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngines;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.Tenant;
 
-import org.camunda.bpm.extension.graphql.auth.AuthenticationProvider;
-import org.camunda.bpm.extension.graphql.auth.AuthenticationResult;
-
-//import org.camunda.bpm.engine.rest.dto.ExceptionDto;
-//import org.camunda.bpm.engine.rest.exception.InvalidRequestException;
-//import org.camunda.bpm.engine.rest.impl.NamedProcessEngineRestServiceImpl;
-//import org.camunda.bpm.engine.rest.util.EngineUtil;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -83,12 +69,12 @@ public class ProcessEngineAuthenticationFilter implements Filter {
 
     try {
       Class<?> authenticationProviderClass = Class.forName(authenticationProviderClassName);
-      authenticationProvider = (AuthenticationProvider) authenticationProviderClass.newInstance();
+      authenticationProvider = (AuthenticationProvider) authenticationProviderClass.getDeclaredConstructor().newInstance();
     } catch (ClassNotFoundException e) {
       throw new ServletException("Cannot instantiate authentication filter: authentication provider not found", e);
     } catch (InstantiationException e) {
       throw new ServletException("Cannot instantiate authentication filter: cannot instantiate authentication provider", e);
-    } catch (IllegalAccessException e) {
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new ServletException("Cannot instantiate authentication filter: constructor not accessible", e);
     } catch (ClassCastException e) {
       throw new ServletException("Cannot instantiate authentication filter: authentication provider does not implement interface " +
@@ -156,7 +142,7 @@ public class ProcessEngineAuthenticationFilter implements Filter {
       .groupMember(userId)
       .list();
 
-    List<String> groupIds = new ArrayList<String>();
+    List<String> groupIds = new ArrayList<>();
     for (Group group : groups) {
       groupIds.add(group.getId());
     }
@@ -169,7 +155,7 @@ public class ProcessEngineAuthenticationFilter implements Filter {
       .includingGroupsOfUser(true)
       .list();
 
-    List<String> tenantIds = new ArrayList<String>();
+    List<String> tenantIds = new ArrayList<>();
     for(Tenant tenant : tenants) {
       tenantIds.add(tenant.getId());
     }
